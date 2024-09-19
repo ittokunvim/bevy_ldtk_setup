@@ -1,4 +1,19 @@
 use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
+
+mod ingame;
+
+use crate::ingame::{
+    PlayerBundle,
+    WallBundle,
+    GoalBundle,
+    LevelWalls,
+    ingame_setup,
+    move_player_from_input,
+    translate_grid_coords_entities,
+    cache_wall_locations,
+    check_goal,
+};
 
 const GAMETITLE: &str = "Bevy LDtk Setup";
 const WINDOW_SIZE: Vec2 = Vec2::new(800.0, 800.0);
@@ -8,6 +23,7 @@ const BG_COLOR: Color = Color::srgb(0.255, 0.251, 0.333);
 pub enum AppState {
     #[default]
     MainMenu,
+    InGame,
 }
 
 fn main() {
@@ -26,10 +42,32 @@ fn main() {
         .init_state::<AppState>()
         .insert_resource(ClearColor(BG_COLOR))
         .insert_resource(Time::<Fixed>::from_seconds(1.0 / 60.0))
+        // ldtk setup
+        .add_plugins(LdtkPlugin)
+        .init_resource::<LevelWalls>()
+        .insert_resource(LevelSelection::index(0))
+        .register_ldtk_entity::<PlayerBundle>("Player")
+        .register_ldtk_entity::<GoalBundle>("Goal")
+        .register_ldtk_int_cell::<WallBundle>(1)
+        // setup
         .add_systems(Startup, setup_camera)
+        // ingame
+        .add_systems(OnEnter(AppState::InGame), ingame_setup)
+        .add_systems(Update, (
+            move_player_from_input,
+            translate_grid_coords_entities,
+            cache_wall_locations,
+            check_goal,
+            // update_ingame,
+        ).run_if(in_state(AppState::InGame)))
         .run();
 }
 
-fn setup_camera(mut commands: Commands) {
+fn setup_camera(
+    mut commands: Commands,
+    mut app_state: ResMut<NextState<AppState>>,
+) {
     commands.spawn(Camera2dBundle::default());
+
+    app_state.set(AppState::InGame);
 }
