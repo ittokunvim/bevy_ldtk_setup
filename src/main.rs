@@ -1,7 +1,13 @@
 use bevy::prelude::*;
 use bevy_ecs_ldtk::prelude::*;
 
+mod mainmenu;
 mod ingame;
+
+use crate::mainmenu::{
+    mainmenu_setup,
+    mainmenu_update,
+};
 
 use crate::ingame::{
     PlayerBundle,
@@ -49,8 +55,9 @@ fn main() {
         .register_ldtk_entity::<PlayerBundle>("Player")
         .register_ldtk_entity::<GoalBundle>("Goal")
         .register_ldtk_int_cell::<WallBundle>(1)
-        // setup
-        .add_systems(Startup, setup_camera)
+        // mainmenu
+        .add_systems(OnEnter(AppState::MainMenu), mainmenu_setup)
+        .add_systems(Update, mainmenu_update.run_if(in_state(AppState::MainMenu)))
         // ingame
         .add_systems(OnEnter(AppState::InGame), ingame_setup)
         .add_systems(Update, (
@@ -61,13 +68,4 @@ fn main() {
             // update_ingame,
         ).run_if(in_state(AppState::InGame)))
         .run();
-}
-
-fn setup_camera(
-    mut commands: Commands,
-    mut app_state: ResMut<NextState<AppState>>,
-) {
-    commands.spawn(Camera2dBundle::default());
-
-    app_state.set(AppState::InGame);
 }
