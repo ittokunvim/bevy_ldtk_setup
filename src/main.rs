@@ -3,6 +3,7 @@ use bevy_ecs_ldtk::prelude::*;
 
 mod mainmenu;
 mod ingame;
+mod gameover;
 
 use crate::mainmenu::{
     mainmenu_setup,
@@ -21,6 +22,11 @@ use crate::ingame::{
     check_goal,
 };
 
+use crate::gameover::{
+    gameover_setup,
+    gameover_update,
+};
+
 const GAMETITLE: &str = "Bevy LDtk Setup";
 const WINDOW_SIZE: Vec2 = Vec2::new(800.0, 800.0);
 const BG_COLOR: Color = Color::srgb(0.255, 0.251, 0.333);
@@ -30,6 +36,7 @@ pub enum AppState {
     #[default]
     MainMenu,
     InGame,
+    GameOver,
 }
 
 fn main() {
@@ -67,5 +74,8 @@ fn main() {
             check_goal,
             // update_ingame,
         ).run_if(in_state(AppState::InGame)))
+        // gameover
+        .add_systems(OnEnter(AppState::GameOver), gameover_setup)
+        .add_systems(Update, gameover_update.run_if(in_state(AppState::GameOver)))
         .run();
 }

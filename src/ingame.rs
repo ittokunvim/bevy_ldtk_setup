@@ -5,7 +5,10 @@ use bevy_ecs_ldtk::{
 };
 use std::collections::HashSet;
 
-use crate::WINDOW_SIZE;
+use crate::{
+    WINDOW_SIZE,
+    AppState
+};
 
 const GRID_SIZE: i32 = 16;
 const MAX_LEVEL_SELECTION: usize = 3;
@@ -146,6 +149,7 @@ pub fn check_goal(
     level_selection: ResMut<LevelSelection>,
     players: Query<&GridCoords, (With<Player>, Changed<GridCoords>)>,
     goals: Query<&GridCoords, With<Goal>>,
+    mut app_state: ResMut<NextState<AppState>>,
 ) {
     if players
         .iter()
@@ -159,6 +163,9 @@ pub fn check_goal(
 
         if indices.level < MAX_LEVEL_SELECTION - 1 {
             indices.level += 1;
+        }
+        else {
+            app_state.set(AppState::GameOver);
         }
     }
 }
